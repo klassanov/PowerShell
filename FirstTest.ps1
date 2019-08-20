@@ -17,11 +17,11 @@ $wsheet.Cells.Item(3,3) = "Дата"
 $wsheet.Cells.Item(3,4) = "Описание"
 $wsheet.Cells.Item(3,5) = "Приходи (лв)"
 
-$colNum=1
+
 $rowNum=4
 
 Get-ChildItem -Filter *.doc | Foreach-Object {
-    
+
         #Read
         $fullFilename= $_.FullName
         $doc = $word.Documents.Open($fullFilename, $false, $true)
@@ -37,20 +37,25 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
         $number=Get-CellValue $table1 9 2
         $_.Name +": "+$description +"|"+$value+"|"+$data+ "|"+$number
 
-        #Write     
-        $wsheet.Cells.Item($rowNum, 1) = Clean-NonPrintableCharacters $excel $number
-        $wsheet.Cells.Item($rowNum, 2) = "СД Класанов и сие"
-        $wsheet.Cells.Item($rowNum, 3) = Clean-NonPrintableCharacters $excel $data
-        $wsheet.Cells.Item($rowNum, 4) = "Превод и легализация на документи"
-        $wsheet.Cells.Item($rowNum, 5) = Clean-NonPrintableCharacters $excel $value
+        #Write
+        $colNum=1   
+          
+        $wsheet.Cells.Item($rowNum, $colNum) = Clean-NonPrintableCharacters $excel $number
 
+        $wsheet.Cells.Item($rowNum, $colNum+1) = "СД Класанов и сие"
+        
+        $wsheet.Cells.Item($rowNum, $colNum+2) = Clean-NonPrintableCharacters $excel $data
+        $wsheet.Cells.Item($rowNum, $colNum+2).NumberFormat="dd.MM.yyyy"
+
+        $wsheet.Cells.Item($rowNum, $colNum+3) = "Превод и легализация на документи"
+
+        $wsheet.Cells.Item($rowNum, $colNum+4) = Clean-NonPrintableCharacters $excel $value
+        #$wsheet.Cells.Item($rowNum, $colNum+4).NumberFormat="0,00"
        
         
         $rowNum++
-        
+       
 }
-
-
 
  $excel.DisplayAlerts = $false
  $ext=".xls"
@@ -58,18 +63,14 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
  $usedRange = $wsheet.UsedRange	
  $usedRange.EntireColumn.AutoFit() | Out-Null
 
- #$wsheet.Columns("C").NumberFormat="dd.MM.yyyy"
-
  $path=$PSScriptRoot+"\"+"OTCHET "+ $currentYear+ $ext
  $workbook.SaveAs($path, 1) 
  $workbook.Close
  $excel.Quit()
 
-
-
 function Get-CellValue {
  param($table, $x, $y )
-    return $table1.Cell($x,$y).Range.Text #-replace "`t", " "
+    return $table1.Cell($x,$y).Range.Text
 }
 
 function Clean-NonPrintableCharacters {
