@@ -1,27 +1,49 @@
-﻿$wd = New-Object -ComObject Word.Application
-$wd.Visible = $false
+﻿$word = New-Object -ComObject Word.Application
+$word.Visible = $false
+
+$excel = New-Object -ComObject Excel.application
+$excel.Visible = $false
+
+#$fixedDescription="Превод и легализация на документи"
+$currentYear=get-date -Format yyyy
+$previousYear=$currentYear-1
+$workbook = $excel.Workbooks.Add()
+$wsheet= $workbook.Worksheets.Item(1)
+#$wsheet.Name = "Fakturi"
+$wsheet.Cells.Item(1,2) = "СД Класанов и сие - ПРИХОДИ за $previousYear година"
+$wsheet.Cells.Item(3,1) = "№"
+$wsheet.Cells.Item(3,2) = "Ф-ра"
+$wsheet.Cells.Item(3,3) = "Дата"
+$wsheet.Cells.Item(3,4) = "Описание"
+$wsheet.Cells.Item(3,5) = "Приходи(лв)"
 
 Get-ChildItem -Filter *.doc | Foreach-Object {
     
+        #Read
         $fullFilename= $_.FullName
-        $doc = $wd.Documents.Open($fullFilename, $false, $true)
+        $doc = $word.Documents.Open($fullFilename, $false, $true)
         $table1= $doc.Tables.Item(1)
 
-        #$description = $table1.Cell(13,2).Range.Text
+       
         $description = Get-CellValue $table1 13 2
-        
-        #$value = $table1.Cell(13,6).Range.Text
         $value = Get-CellValue $table1 13 6
-
-        #$data=$table1.Cell(10,2).Range.Text
         $data= Get-CellValue $table1 10 2
-
-        #$number=$table1.Cell(9,2).Range.Text
         $number=Get-CellValue $table1 9 2
-
         $_.Name +": "+$description +"|"+$value+"|"+$data+ "|"+$number
+
+        #Write     
+        $directory=$_.DirectoryName
         
 }
+
+ $excel.DisplayAlerts = 'False'
+ $ext=".xls"
+ $path=$PSScriptRoot+"\"+"OTCHET "+ $currentYear+ $ext
+ $path
+ $workbook.SaveAs($path, 1) 
+ $workbook.Close
+ $excel.Quit()
+
 
 
 function Get-CellValue {
