@@ -15,7 +15,10 @@ $wsheet.Cells.Item(3,1) = "№"
 $wsheet.Cells.Item(3,2) = "Ф-ра"
 $wsheet.Cells.Item(3,3) = "Дата"
 $wsheet.Cells.Item(3,4) = "Описание"
-$wsheet.Cells.Item(3,5) = "Приходи(лв)"
+$wsheet.Cells.Item(3,5) = "Приходи (лв)"
+
+$colNum=1
+$rowNum=4
 
 Get-ChildItem -Filter *.doc | Foreach-Object {
     
@@ -24,22 +27,40 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
         $doc = $word.Documents.Open($fullFilename, $false, $true)
         $table1= $doc.Tables.Item(1)
 
+        $valueRowNumber=$table1.Rows.Count-5
        
+        $valueRowNumber
+
         $description = Get-CellValue $table1 13 2
-        $value = Get-CellValue $table1 13 6
+        $value = Get-CellValue $table1 $valueRowNumber 3
         $data= Get-CellValue $table1 10 2
         $number=Get-CellValue $table1 9 2
         $_.Name +": "+$description +"|"+$value+"|"+$data+ "|"+$number
 
         #Write     
-        $directory=$_.DirectoryName
+        $wsheet.Cells.Item($rowNum, 1) = Clean-NonPrintableCharacters $excel $number
+        $wsheet.Cells.Item($rowNum, 2) = "СД Класанов и сие"
+        $wsheet.Cells.Item($rowNum, 3) = Clean-NonPrintableCharacters $excel $data
+        $wsheet.Cells.Item($rowNum, 4) = "Превод и легализация на документи"
+        $wsheet.Cells.Item($rowNum, 5) = Clean-NonPrintableCharacters $excel $value
+
+       
+        
+        $rowNum++
         
 }
 
- $excel.DisplayAlerts = 'False'
+
+
+ $excel.DisplayAlerts = $false
  $ext=".xls"
+ 
+ $usedRange = $wsheet.UsedRange	
+ $usedRange.EntireColumn.AutoFit() | Out-Null
+
+ #$wsheet.Columns("C").NumberFormat="dd.MM.yyyy"
+
  $path=$PSScriptRoot+"\"+"OTCHET "+ $currentYear+ $ext
- $path
  $workbook.SaveAs($path, 1) 
  $workbook.Close
  $excel.Quit()
@@ -48,7 +69,12 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
 
 function Get-CellValue {
  param($table, $x, $y )
-    $table1.Cell($x,$y).Range.Text
+    return $table1.Cell($x,$y).Range.Text #-replace "`t", " "
+}
+
+function Clean-NonPrintableCharacters {
+  param ($excel, $str)
+      return $excel.WorksheetFunction.Clean($str)
 }
 
 
