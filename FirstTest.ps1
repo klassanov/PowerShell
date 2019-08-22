@@ -10,7 +10,7 @@ $previousYear=$currentYear-1
 $workbook = $excel.Workbooks.Add()
 $wsheet= $workbook.Worksheets.Item(1)
 #$wsheet.Name = "Fakturi"
-$wsheet.Cells.Item(1,2) = "СД Класанов и сие - ПРИХОДИ за $previousYear година"
+$wsheet.Cells.Item(1,2) = "СД Класанов и сие - Автоматичен отчет ПРИХОДИ"
 $wsheet.Cells.Item(3,1) = "№"
 $wsheet.Cells.Item(3,2) = "Ф-ра"
 $wsheet.Cells.Item(3,3) = "Дата"
@@ -29,18 +29,22 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
 
         $valueRowNumber=$table1.Rows.Count-5
        
-        $valueRowNumber
-
         $description = Get-CellValue $table1 13 2
         $value = Get-CellValue $table1 $valueRowNumber 3
         $data= Get-CellValue $table1 10 2
-        $number=Get-CellValue $table1 9 2
+
+        $parsedNumber=Get-CellValue $table1 9 2
+        $parsedNumber = $parsedNumber -replace "№", ""
+        $number = $parsedNumber.Trim()
+
         $_.Name +": "+$description +"|"+$value+"|"+$data+ "|"+$number
 
         #Write
         $colNum=1   
           
         $wsheet.Cells.Item($rowNum, $colNum) = Clean-NonPrintableCharacters $excel $number
+        #$wsheet.Cells.Item($rowNum, $colNum).NumberFormat = "@"
+
 
         $wsheet.Cells.Item($rowNum, $colNum+1) = "СД Класанов и сие"
         
@@ -52,9 +56,7 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
         $wsheet.Cells.Item($rowNum, $colNum+4) = Clean-NonPrintableCharacters $excel $value
         #$wsheet.Cells.Item($rowNum, $colNum+4).NumberFormat="0,00"
        
-        
         $rowNum++
-       
 }
 
  $excel.DisplayAlerts = $false
@@ -63,10 +65,12 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
  $usedRange = $wsheet.UsedRange	
  $usedRange.EntireColumn.AutoFit() | Out-Null
 
- $path=$PSScriptRoot+"\"+"OTCHET "+ $currentYear+ $ext
+
+ $path=$PSScriptRoot+"\"+"Avtomatichen-Otchet-Prihodi"+ $ext
  $workbook.SaveAs($path, 1) 
  $workbook.Close
  $excel.Quit()
+
 
 function Get-CellValue {
  param($table, $x, $y )
