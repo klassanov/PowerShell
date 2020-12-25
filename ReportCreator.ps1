@@ -1,4 +1,4 @@
-﻿$word = New-Object -ComObject Word.Application
+$word = New-Object -ComObject Word.Application
 $word.Visible = $false
 
 $excel = New-Object -ComObject Excel.application
@@ -19,6 +19,16 @@ $wsheet.Cells.Item(3,5) = "Приходи (лв)"
 
 
 $rowNum=4
+
+function Get-CellValue {
+ param($table, $x, $y )
+    return $table1.Cell($x,$y).Range.Text
+}
+
+function Clean-NonPrintableCharacters {
+  param ($excel, $str)
+      return $excel.WorksheetFunction.Clean($str)
+}
 
 Get-ChildItem -Filter *.doc | Foreach-Object {
 
@@ -70,16 +80,3 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
  $workbook.SaveAs($path, 1) 
  $workbook.Close
  $excel.Quit()
-
-
-function Get-CellValue {
- param($table, $x, $y )
-    return $table1.Cell($x,$y).Range.Text
-}
-
-function Clean-NonPrintableCharacters {
-  param ($excel, $str)
-      return $excel.WorksheetFunction.Clean($str)
-}
-
-
