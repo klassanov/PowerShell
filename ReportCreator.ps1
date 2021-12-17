@@ -78,5 +78,5 @@ Get-ChildItem -Filter *.doc | Foreach-Object {
 
  $path=$PSScriptRoot+"\"+"Avtomatichen-Otchet-Prihodi"+ $ext
  $workbook.SaveAs($path, 1) 
- $workbook.Close
+ $workbook.Close($false)
  $excel.Quit()
